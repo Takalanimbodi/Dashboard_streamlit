@@ -38,3 +38,4 @@ Built with:
 - Supabase PostgreSQL for data warehousing
 - FAST API for ingestion and models-for it to be accessed by supabase edge functions
 - Jupyter Notebook for models training
+DASHBOARD LINK => https://dashboardapp-m5wiqnithnevhjfrzbvcd6.streamlit.app/
