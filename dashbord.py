@@ -366,21 +366,72 @@ selected_cluster = st.selectbox(
 
 cluster_customers = df_filtered[
     df_filtered["cluster_description"] == selected_cluster
+].copy()
+
+# Determine which model this cluster belongs to
+model_for_cluster = cluster_customers["model_used"].iloc[0] if not cluster_customers.empty else None
+
+# Load and join raw features for that model
+if model_for_cluster and model_for_cluster in raw_features:
+    features = raw_features[model_for_cluster]
+    df_raw = load_raw_features(features)
+
+    if not df_raw.empty:
+        cluster_customers = cluster_customers.merge(df_raw, on="row_id", how="left")
+
+# Drop redundant columns
+display_cols = ["row_id", "scored_at"] + [
+    c for c in cluster_customers.columns
+    if c not in ["cluster", "model_used", "cluster_description", "scored_at", "row_id"]
 ]
 
-st.write(f"Customers inside **{selected_cluster}**")
+st.write(f"**{len(cluster_customers)}** customers in **{selected_cluster}**")
+
+# Mini Summary Bar
+# Only include numeric columns that actually exist after the merge
+numeric_features = [
+    c for c in display_cols
+    if c not in ["row_id", "scored_at"]
+    and c in cluster_customers.columns
+    and pd.api.types.is_numeric_dtype(cluster_customers[c])
+]
+
+if numeric_features:
+    summary_cols = st.columns(len(numeric_features))
+    for i, feat in enumerate(numeric_features):
+        col_data = cluster_customers[feat].dropna()
+        if col_data.empty:
+            summary_cols[i].metric(
+                label=feat.replace("_", " ").title(),
+                value="N/A",
+                delta="no data"
+            )
+        else:
+            mean_val = col_data.mean()
+            median_val = col_data.median()
+            summary_cols[i].metric(
+                label=feat.replace("_", " ").title(),
+                value=f"{mean_val:,.1f}",
+                delta=f"median: {median_val:,.1f}"
+            )
+else:
+    st.info("No feature data available for this cluster.")
+
+st.divider()
+
+# Customer Table
+# Only show display_cols that actually exist
+safe_display_cols = [c for c in display_cols if c in cluster_customers.columns]
 
 st.dataframe(
-    cluster_customers,
+    cluster_customers[safe_display_cols],
     use_container_width=True
 )
 
-# download button
-
-csv = cluster_customers.to_csv(index=False)
-
+# Download button
+csv = cluster_customers[safe_display_cols].to_csv(index=False)
 st.download_button(
     "Download Cluster Data",
     csv,
-    file_name="cluster_customers.csv"
+    file_name=f"{selected_cluster.replace(' ', '_').lower()}_customers.csv"
 )
