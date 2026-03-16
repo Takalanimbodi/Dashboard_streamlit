@@ -27,18 +27,25 @@ def load_data():
         df = pd.read_sql(query, conn)
 
     df["scored_at"] = pd.to_datetime(df["scored_at"])
+    
+     Keep only the latest record per customer per model
+    df = (
+        df.sort_values("scored_at", ascending=False)
+        .drop_duplicates(subset=["row_id", "model_used"], keep="first")
+    )
     return df
 
 
 @st.cache_data(ttl=300)
-def load_model_runs():
+def load_full_history():
     query = text("SELECT * FROM model_runs ORDER BY run_timestamp DESC")
     with engine.connect() as conn:
-        return pd.read_sql(query, conn)
+        df["scored_at"] = pd.to_datetime(df["scored_at"])
+    return df
 
 
 df = load_data()
-runs = load_model_runs()
+runs = load_full_history()
 
 
 
@@ -184,7 +191,7 @@ with colC:
     st.subheader("Customer Cluster Movement")
 
 # Sort by customer and time
-    movement_df = df.sort_values(["row_id", "scored_at"])
+    movement_df = load_full_history().sort_values(["row_id", "scored_at"])
 
 # previous cluster per customer
     movement_df["previous_cluster"] = movement_df.groupby("row_id")["cluster_description"].shift(1)
