@@ -28,7 +28,6 @@ def load_data():
 
     df["scored_at"] = pd.to_datetime(df["scored_at"])
     
-     Keep only the latest record per customer per model
     df = (
         df.sort_values("scored_at", ascending=False)
         .drop_duplicates(subset=["row_id", "model_used"], keep="first")
