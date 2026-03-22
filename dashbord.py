@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime, timedelta
 import pandas as pd
 import plotly.express as px
 from sqlalchemy import create_engine, text
@@ -122,41 +123,54 @@ runs = load_model_runs()
  
 # SIDEBAR FILTERS
 
- 
 st.sidebar.title("Dashboard Filters")
- 
+
+# Handle empty database
+if df.empty:
+    st.warning("No data available yet. Please ingest data to view the dashboard.")
+    st.stop()
+
 models = st.sidebar.multiselect(
     "Selected Model",
     df["model_used"].unique(),
     default=df["model_used"].unique()
 )
- 
+
 clusters = st.sidebar.multiselect(
     "Selected Cluster",
     df["cluster_description"].unique(),
     default=df["cluster_description"].unique()
 )
- 
+
 min_date = df["scored_at"].min()
 max_date = df["scored_at"].max()
- 
+
+# Handle NaT dates from empty tables
+if pd.isna(min_date) or pd.isna(max_date):
+    default_start = datetime.today().date() - timedelta(days=30)
+    default_end = datetime.today().date()
+else:
+    default_start = min_date.date()
+    default_end = max_date.date()
+
 start_date, end_date = st.sidebar.date_input(
     "Select Date Range",
-    [min_date, max_date]
+    [default_start, default_end]
 )
- 
+
 df_filtered = df.copy()
 df_filtered = df_filtered[df_filtered["model_used"].isin(models)]
 df_filtered = df_filtered[df_filtered["cluster_description"].isin(clusters)]
- 
+
 start_date = pd.to_datetime(start_date)
 end_date = pd.to_datetime(end_date) + pd.Timedelta(days=1)
- 
+
 df_filtered = df_filtered[
     (df_filtered["scored_at"] >= start_date) &
     (df_filtered["scored_at"] < end_date)
 ]
- 
+
+# HEADER METRICS
 # HEADER METRICS
 
  
