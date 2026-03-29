@@ -222,8 +222,8 @@ with tab1:
         color="cluster_description",
         text="count"
         )
-       fig1.update_layout(showlegend=False)
-       st.plotly_chart(fig1, use_container_width=True)
+        fig1.update_layout(showlegend=False)
+        st.plotly_chart(fig1, use_container_width=True)
     with colB:
         st.subheader("Cluster Scoring Trend")
  
