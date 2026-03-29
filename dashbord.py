@@ -353,7 +353,7 @@ with tab3:
             runs.sort_values("run_timestamp", ascending=False),
             use_container_width=True
         )
-    else:
+     else:
         st.info("No model monitoring data available.")
 
 with tab4:
