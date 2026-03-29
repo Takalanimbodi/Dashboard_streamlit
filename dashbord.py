@@ -171,8 +171,6 @@ df_filtered = df_filtered[
 ]
 
 # HEADER METRICS
-# HEADER METRICS
-
  
 st.title("Customer Segmentation Analytics Dashboard")
  
@@ -196,14 +194,18 @@ col3.metric("Latest Model Used", latest_model)
 col4.metric("Last Scoring Date", last_scored.strftime("%Y-%m-%d"))
  
 st.divider()
- 
-# DISTRIBUTION & TREND CHARTS
 
- 
-colA, colB = st.columns(2)
- 
-with colA:
-    st.subheader("Customer Distribution by Cluster")
+tab1, tab2, tab3, tab4 = st.tabs([
+    "Overview",
+    "Cluster Analysis",
+    "Model Monitoring",
+    "Customer Drill-Down"
+])
+
+with tab1:
+    colA, colB = st.columns(2)
+    with colA:
+         st.subheader("Customer Distribution by Cluster")
  
     cluster_dist = (
         df_filtered.groupby("cluster_description")
@@ -220,9 +222,8 @@ with colA:
     )
     fig1.update_layout(showlegend=False)
     st.plotly_chart(fig1, use_container_width=True)
- 
-with colB:
-    st.subheader("Cluster Scoring Trend")
+    with colB:
+        st.subheader("Cluster Scoring Trend")
  
     trend = (
         df_filtered.groupby("scored_at")
@@ -237,16 +238,11 @@ with colB:
         markers=True
     )
     st.plotly_chart(fig3, use_container_width=True)
- 
-st.divider()
- 
-# CLUSTER MOVEMENT & MODEL PERFORMANCE
 
- 
-colC, colD = st.columns(2)
- 
-with colC:
-    st.subheader("Customer Cluster Movement")
+with tab2:
+    colC, colD = st.columns(2)
+    with colC:
+         st.subheader("Customer Cluster Movement")
  
     # Use full history (not deduplicated) to detect movement
     movement_df = load_full_history().sort_values(["row_id", "scored_at"])
@@ -289,34 +285,8 @@ with colC:
  
     else:
         st.info("No cluster movement detected yet.")
- 
-with colD:
-    st.subheader("Model Performance Monitoring")
- 
-    if not runs.empty:
-        fig4 = px.line(
-            runs,
-            x="run_timestamp",
-            y="silhouette_score",
-            color="model_name",
-            markers=True,
-            title="Model Quality Over Time"
-        )
-        st.plotly_chart(fig4, use_container_width=True)
- 
-        st.subheader("Recent Model Runs")
-        st.dataframe(
-            runs.sort_values("run_timestamp", ascending=False),
-            use_container_width=True
-        )
-    else:
-        st.info("No model monitoring data available.")
- 
-st.divider()
- 
-# CLUSTER PROFILES
- 
-st.subheader("Cluster Profiles (All Models)")
+    with colD:
+        st.subheader("Cluster Profiles (All Models)")
  
 raw_features = {
     "behavioral": ["lifetime_value", "membership", "total_purchases", "days_since_last_purchase"],
@@ -363,11 +333,31 @@ if cluster_profiles_list:
     )
 else:
     st.info("No cluster profile data available for the selected filters.")
- 
 
-# CUSTOMER DRILL-DOWN
+with tab3:
+     st.subheader("Model Performance Monitoring")
  
-st.subheader("Customer Drill-Down Analytics")
+    if not runs.empty:
+        fig4 = px.line(
+            runs,
+            x="run_timestamp",
+            y="silhouette_score",
+            color="model_name",
+            markers=True,
+            title="Model Quality Over Time"
+        )
+        st.plotly_chart(fig4, use_container_width=True)
+ 
+        st.subheader("Recent Model Runs")
+        st.dataframe(
+            runs.sort_values("run_timestamp", ascending=False),
+            use_container_width=True
+        )
+    else:
+        st.info("No model monitoring data available.")
+
+with tab4:
+    st.subheader("Customer Drill-Down Analytics")
  
 selected_cluster = st.selectbox(
     "Select Cluster to Explore",
@@ -437,3 +427,6 @@ st.download_button(
     csv,
     file_name=f"{selected_cluster.replace(' ', '_').lower()}_customers.csv"
 )
+
+
+ 
