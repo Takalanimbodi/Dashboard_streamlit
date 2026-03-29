@@ -174,24 +174,7 @@ df_filtered = df_filtered[
  
 st.title("Customer Segmentation Analytics Dashboard")
  
-total_customers = df_filtered["row_id"].nunique()
-num_clusters = df_filtered["cluster"].nunique()
- 
-latest_model = (
-    df_filtered.sort_values("scored_at", ascending=False)["model_used"].iloc[0]
-    if not df_filtered.empty else "N/A"
-)
- 
-last_scored = (
-    df_filtered["scored_at"].max()
-    if not df_filtered.empty else pd.Timestamp.now()
-)
- 
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Total Customers", total_customers)
-col2.metric("Active Clusters", num_clusters)
-col3.metric("Latest Model Used", latest_model)
-col4.metric("Last Scoring Date", last_scored.strftime("%Y-%m-%d"))
+
  
 st.divider()
 
@@ -205,6 +188,25 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     colA, colB = st.columns(2)
     with colA:
+        total_customers = df_filtered["row_id"].nunique()
+        num_clusters = df_filtered["cluster"].nunique()
+ 
+        latest_model = (
+        df_filtered.sort_values("scored_at", ascending=False)["model_used"].iloc[0]
+        if not df_filtered.empty else "N/A"
+        )
+ 
+        last_scored = (
+        df_filtered["scored_at"].max()
+        if not df_filtered.empty else pd.Timestamp.now()
+        )
+ 
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Customers", total_customers)
+        col2.metric("Active Clusters", num_clusters)
+        col3.metric("Latest Model Used", latest_model)
+        col4.metric("Last Scoring Date", last_scored.strftime("%Y-%m-%d"))
+
          st.subheader("Customer Distribution by Cluster")
  
     cluster_dist = (
