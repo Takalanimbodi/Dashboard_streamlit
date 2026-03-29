@@ -207,23 +207,23 @@ with tab1:
         col3.metric("Latest Model Used", latest_model)
         col4.metric("Last Scoring Date", last_scored.strftime("%Y-%m-%d"))
 
-         st.subheader("Customer Distribution by Cluster")
+        st.subheader("Customer Distribution by Cluster")
  
-    cluster_dist = (
+        cluster_dist = (
         df_filtered.groupby("cluster_description")
         .size()
         .reset_index(name="count")
-    )
+        )
  
-    fig1 = px.bar(
+        fig1 = px.bar(
         cluster_dist,
         x="cluster_description",
         y="count",
         color="cluster_description",
         text="count"
-    )
-    fig1.update_layout(showlegend=False)
-    st.plotly_chart(fig1, use_container_width=True)
+        )
+       fig1.update_layout(showlegend=False)
+       st.plotly_chart(fig1, use_container_width=True)
     with colB:
         st.subheader("Cluster Scoring Trend")
  
